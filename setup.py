@@ -141,7 +141,6 @@ install_requires = [
     'openpyxl==1.8.6',  # TODO: openpyxl-444 & pandas-10125
     'Pillow',  # For UI About boxes
     'doit >= 0.28',
-    'networkx',
 ]
 
 setup(
@@ -207,7 +206,7 @@ setup(
         ],
     },
     run_requires=[
-        
+
         {
             "requires": ["pywin32 > 1.0", "xlwings", "easygui"],
             "environment": "sys_platform == 'win32'"
