@@ -21,6 +21,7 @@ from pandalone.xleash.io.backend import ABCBackend, ABCSheet, SheetId
 from xlrd import (xldate, XL_CELL_DATE, XL_CELL_EMPTY, XL_CELL_TEXT,
                   XL_CELL_BLANK, XL_CELL_ERROR, XL_CELL_BOOLEAN, XL_CELL_NUMBER)
 import xlrd
+import weakref
 
 import numpy as np
 
@@ -239,6 +240,7 @@ class XlrdBackend(ABCBackend):
             path = utils.urlpath2path(parts.path)
             log.info('Opening book(%r)...', path)
             book = xlrd.open_workbook(path, **ropts)
+            # TODO: ?? weakref.finalize(book, backend.SheetsFactory.close)
         else:
             ropts.pop('on_demand', None)
             http_opts = ropts.get('http_opts', {})

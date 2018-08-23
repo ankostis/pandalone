@@ -168,7 +168,13 @@ def abspath(path):
 
 
 def convpath(fpath, abs_path=True, exp_user=True, exp_vars=True):
-    """Without any flags, just pass through :func:`osp.normpath`. """
+    """
+    Without any flags, just pass through :func:`osp.normpath`.
+
+    :param abs_path:
+        3-state, None: expand if it exists
+        Useful to preserve POSIX fpaths under Windows, e.g. ``/dev/null``.
+    """
     if exp_user:
         fpath = osp.expanduser(fpath)
     if exp_vars:
@@ -176,7 +182,10 @@ def convpath(fpath, abs_path=True, exp_user=True, exp_vars=True):
         fpath = fpath.replace('$\\', '_UNC_PATH_HERE_')
         fpath = osp.expandvars(fpath)
         fpath = fpath.replace('_UNC_PATH_HERE_', '$\\')
-    fpath = abspath(fpath) if abs_path else normpath(fpath)
+    fpath = (abspath(fpath)
+             if abs_path or (abs_path is None and osp.exists(fpath))
+             else normpath(fpath))
+
     return fpath
 
 

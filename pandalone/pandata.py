@@ -1126,6 +1126,7 @@ def iter_jsonpointer_parts_relaxed(jsonpointer):
     for part in jsonpointer.split("/"):
         yield unescape_jsonpointer_part(part)
 
+
 _scream = object()
 
 

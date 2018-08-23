@@ -866,7 +866,7 @@ from ._filter import (
 install_default_filters(installed_filters)
 
 from ._lasso import (
-    lasso, Ranger,
+    lasso, Ranger, default_sheets_factory_weakref,
     make_default_Ranger, get_default_opts,
 )
 
@@ -975,7 +975,7 @@ __all__ = [
     'EmptyCaptureException', 'margin_coords_from_states_matrix',
 
     'lasso', 'Ranger', 'SheetsFactory', 'io_backends',
-    'make_default_Ranger',
+    'make_default_Ranger', 'default_sheets_factory_weakref',
     'XLocation', 'get_default_opts',
     'installed_filters',
     'Lasso',

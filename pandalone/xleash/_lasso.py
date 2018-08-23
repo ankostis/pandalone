@@ -19,6 +19,7 @@ from copy import deepcopy
 import inspect
 import logging
 import textwrap
+import weakref
 
 from future.backports import ChainMap
 from past.builtins import basestring
@@ -285,6 +286,21 @@ def get_default_opts(overrides=None):
     return opts
 
 
+#: A **weakref** to a :class:`backend.SheetsFactory` created only when needed.
+default_sheets_factory_weakref = None
+
+
+def ensure_default_sheets_factory():
+    global default_sheets_factory_weakref
+
+    fact = default_sheets_factory_weakref and default_sheets_factory_weakref()
+    if not fact:
+        fact = backend.SheetsFactory()
+        # FIXME: ref to obj: weakref.finalize(fact, backend.SheetsFactory.close)
+        default_sheets_factory_weakref = weakref.ref(fact)
+    return fact
+
+
 def make_default_Ranger(sheets_factory=None,
                         base_opts=None,
                         available_filters=None):
@@ -293,7 +309,8 @@ def make_default_Ranger(sheets_factory=None,
 
     :param sheets_factory:
             Factory of sheets from where to parse rect-values; if unspecified,
-            a new :class:`SheetsFactory` is created.
+            a new :class:`SheetsFactory` is created and assigned into
+            :data:`default_sheets_factory_weakref`.
             Remember to invoke its :meth:`SheetsFactory.close()` to clear
             resources from any opened sheets.
 
@@ -322,7 +339,9 @@ def make_default_Ranger(sheets_factory=None,
         <pandalone.xleash._lasso.Ranger object at
         ...
     """
-    return Ranger(sheets_factory or backend.SheetsFactory(),
+    if sheets_factory is None:
+        sheets_factory = ensure_default_sheets_factory()
+    return Ranger(sheets_factory,
                   base_opts or get_default_opts(),
                   available_filters)
 
@@ -348,7 +367,8 @@ def lasso(xlref,
 
     :param sheets_factory:
             Factory of sheets from where to parse rect-values; if unspecified,
-            the new :class:`SheetsFactory` created is closed afterwards.
+            a module-level :class:`SheetsFactory` is implicitely created in
+            :data:`default_sheets_factory_weakref`.
             Delegated to :func:`make_default_Ranger()`, so items override
             default ones; use a new :class:`Ranger` if that is not desired.
 
@@ -386,17 +406,12 @@ def lasso(xlref,
 
         sheet = _
     """
-    factory_is_mine = not sheets_factory
     if base_opts is None:
         base_opts = get_default_opts()
 
-    try:
-        ranger = make_default_Ranger(sheets_factory=sheets_factory,
-                                     base_opts=base_opts,
-                                     available_filters=available_filters)
-        lasso = ranger.do_lasso(xlref, **context_kwds)
-    finally:
-        if factory_is_mine:
-            ranger.sheets_factory.close()
+    ranger = make_default_Ranger(sheets_factory=sheets_factory,
+                                 base_opts=base_opts,
+                                 available_filters=available_filters)
+    lasso = ranger.do_lasso(xlref, **context_kwds)
 
     return lasso if return_lasso else lasso.values
