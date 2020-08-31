@@ -1,0 +1,5 @@
+## Pip-dependencies for developing the project.
+
+## TODO: pin working versions, or rather drop it 
+#        (`pip install wltp[dev]` is enough)
+-e .[doc]
